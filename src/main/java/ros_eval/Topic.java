@@ -38,8 +38,9 @@ public class Topic<T> implements Source<T>, Sink<T>, Listener<T> {
         this.topicName = topicName;
         this.connectedNode = connectedNode;
 
-        this.rosPublisher = connectedNode.newPublisher(topicName, topicType);
-        this.rosSubscriber = connectedNode.newSubscriber(topicName, topicType);
+        rosPublisher = connectedNode.newPublisher(topicName, topicType);
+        rosPublisher.setLatchMode(true);
+        rosSubscriber = connectedNode.newSubscriber(topicName, topicType);
     }
 
     @Override
@@ -68,39 +69,41 @@ public class Topic<T> implements Source<T>, Sink<T>, Listener<T> {
         return new Subscriber<T>() {
             // Timing issues
             long last = 0;
-            long cycle = 250;
+            long cycle = 100;
 
-            @Override
-            public void onSubscribe(Subscription s) {
-                s.request(2);
-            }
-
-            @Override
-            public void onNext(T t) {
-                long diff = System.currentTimeMillis() - last;
-                try {
-                    if (diff < cycle)
-                        Thread.sleep(diff);
-                    else if (last == 0)
-                        Thread.sleep(2 * cycle);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                Notification<T> notification = Notification.createOnNext(t);
-                rosPublisher.publish(serializer.serialize(notification));
+            private void throttle() {
+                long diff = (last == 0) ? cycle : System.currentTimeMillis() - last;
+                if (diff <= cycle)
+                    try { Thread.sleep(cycle - diff); } catch (InterruptedException ignored) {}
                 last = System.currentTimeMillis();
             }
 
             @Override
+            public void onSubscribe(Subscription s) {
+                s.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(T t) {
+                throttle();
+                Notification<T> notification = Notification.createOnNext(t);
+                rosPublisher.publish(serializer.serialize(notification));
+//                System.out.println(topicName + "\t\t~~>\t" + notification.getValue());
+            }
+
+            @Override
             public void onError(Throwable t) {
+                throttle();
                 Notification<T> notification = Notification.createOnError(t);
                 rosPublisher.publish(serializer.serialize(notification));
             }
 
             @Override
             public void onComplete() {
+                throttle();
                 Notification<T> notification = Notification.createOnCompleted();
                 rosPublisher.publish(serializer.serialize(notification));
+//                System.out.println(topicName + "\t\t~~>\t!");
             }
         };
     }
@@ -117,12 +120,16 @@ public class Topic<T> implements Source<T>, Sink<T>, Listener<T> {
                 rosSubscriber.addMessageListener(msg -> {
                     Notification<T> notification = serializer.deserialize(msg);
                     Notification.Kind kind = notification.getKind();
-                    if (kind == Notification.Kind.OnCompleted)
+                    if (kind == Notification.Kind.OnCompleted) {
+//                        System.out.println("!\t\t~~>\t" + topicName);
                         s.onComplete();
+                    }
                     else if (kind == Notification.Kind.OnError)
                         s.onError(notification.getThrowable());
-                    else
+                    else {
+//                        System.out.println(notification.getValue() + "\t\t~~>\t" + topicName);
                         s.onNext(notification.getValue());
+                    }
                 });
             }
         };

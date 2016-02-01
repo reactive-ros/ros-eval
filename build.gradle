@@ -23,14 +23,14 @@ dependencies {
 	// ros
 	compile 'org.ros.rosjava_core:rosjava:0.2.1'
 
-	// rxjava
-	compile 'com.github.reactive-ros:rx-eval:-SNAPSHOT'
-
 	// Serialization
 	compile 'com.cedarsoftware:json-io:4.1.9'
 
+	compile 'com.github.reactive-ros:graph-viz:-SNAPSHOT'
+	
 	// Testing
 	testCompile 'junit:junit:4.11'
+	testCompile 'com.github.reactive-ros:rx-eval:-SNAPSHOT'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -50,7 +50,7 @@ artifacts {
 
 test {
 	testLogging {
-		showStandardStreams true
+		//showStandardStreams true
 		displayGranularity 3
 		events 'passed', 'failed', 'standard_out'
 	}

@@ -5,7 +5,6 @@ import org.reactive_ros.evaluation.EvaluationStrategy;
 import org.reactive_ros.internal.output.*;
 import org.ros.RosCore;
 import org.ros.node.*;
-import ros_eval.ros_graph.RosRunner;
 
 /**
  * Evaluates a dataflow graph by mapping one or more stream operators to individual ROS nodes
@@ -16,10 +15,10 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
     private EvaluationStrategy evaluationStrategy;
     private final NodeMainExecutor executor = DefaultNodeMainExecutor.newDefault();
     private NodeConfiguration config;
-    private RosRunner runner;
+    public RosRunner runner;
 
     public RosEvaluationStrategy(EvaluationStrategy evaluationStrategy) {
-        RosCore roscore = RosCore.newPrivate(11311);
+        RosCore roscore = RosCore.newPublic();
         roscore.start();
         try {
             roscore.awaitStart();

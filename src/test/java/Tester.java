@@ -1,11 +1,10 @@
 import static org.junit.Assert.*;
 
-
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.reactive_ros.Stream;
+import org.reactive_ros.evaluation.EvaluationStrategy;
 import org.reactive_ros.util.functions.Func0;
 import ros_eval.RosEvaluationStrategy;
 import rx_eval.RxjavaEvaluationStrategy;
@@ -21,12 +20,14 @@ public class Tester {
     private String testName;
     private Stream streamA;
     private Stream streamB;
+    private EvaluationStrategy evaluationStrategy;
 
     //parameters pass via this constructor
-    public Tester(String testName, Stream streamA, Stream streamB) {
+    public Tester(String testName, Stream streamA, Stream streamB, EvaluationStrategy evaluationStrategy) {
         this.testName = testName;
         this.streamA = streamA;
         this.streamB = streamB;
+        this.evaluationStrategy = evaluationStrategy;
     }
 
     //Declares parameters here
@@ -37,19 +38,12 @@ public class Tester {
         return s.streams;
     }
 
-    @Before
-    public void initialize() {
-        Stream.setEvaluationStrategy(new RosEvaluationStrategy(new RxjavaEvaluationStrategy()));
-    }
-
-
     @Test
     public void test() {
+        Stream.setEvaluationStrategy(evaluationStrategy);
+
         Object[] array1 = streamA.toBlocking().toList().toArray();
         Object[] array2 = streamB.toBlocking().toList().toArray();
-
-        System.out.println("Array1: " + Arrays.toString(array1));
-        System.out.println("Array2: " + Arrays.toString(array2));
 
         assertArrayEquals(array1, array2);
     }
@@ -57,7 +51,7 @@ public class Tester {
     static void setUp(Streams pairs) {
         pairs.put("from",
                 Stream.from(Arrays.asList(1, 2, 3, 4, 5)),
-                Stream.just(1,2,3,4,5,6)
+                Stream.just(1, 2, 3, 4, 5)
         );
         pairs.put("defer",
                 Stream.defer(() -> Stream.just(1, 2, 3, 4, 5)),
@@ -178,10 +172,12 @@ public class Tester {
         );
     }
     static class Streams {
+        static final EvaluationStrategy eval = new RosEvaluationStrategy(new RxjavaEvaluationStrategy());
+
         public Queue<Object[]> streams = new LinkedList<>();
 
         public void put(String name, Stream s1, Stream s2) {
-            streams.add(new Object[] {name, s1, s2});
+            streams.add(new Object[] {name, s1, s2, eval});
         }
     }
 }

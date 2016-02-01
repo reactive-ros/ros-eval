@@ -1,5 +1,6 @@
-package ros_eval.ros_graph;
+package ros_eval;
 
+import graph_viz.GraphVisualizer;
 import org.jgrapht.traverse.BreadthFirstIterator;
 import org.reactive_ros.Stream;
 import org.reactive_ros.evaluation.EvaluationStrategy;
@@ -16,7 +17,9 @@ import org.ros.namespace.GraphName;
 import org.ros.node.*;
 import ros_eval.ReactiveNodeMain;
 import ros_eval.Topic;
-
+import ros_eval.ros_graph.RosEdge;
+import ros_eval.ros_graph.RosGraph;
+import ros_eval.ros_graph.RosNode;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -30,7 +33,7 @@ public class RosRunner extends AbstractNodeMain {
     EvaluationStrategy evalStrategy;
     ConnectedNode connectedNode;
 
-    public String nodePrefix = "reactive_node";
+    public String nodePrefix = "~";
     int topicCounter = 0;
     int topicName = 0;
 
@@ -48,7 +51,7 @@ public class RosRunner extends AbstractNodeMain {
     }
 
     public Topic newTopic() {
-        return new Topic(nodePrefix + "_topic/" + Integer.toString(topicCounter++), connectedNode);
+        return new Topic(nodePrefix + "/" + Integer.toString(topicCounter++), connectedNode);
     }
 
     @Override
@@ -67,23 +70,16 @@ public class RosRunner extends AbstractNodeMain {
         this.output = output;
     }
 
-    private void execute(Stream stream, Output output) {
+    private void execute(Stream stream, Output output) { // TODO Network layout
         String nodeName = newName();
-        exec.execute( // TODO Network layout
-                new ReactiveNodeMain(nodeName, stream, output, evalStrategy.newStrategy(), connectedNode.getLog()),
+        exec.execute(
+                new ReactiveNodeMain(nodeName, stream, output, evalStrategy.newStrategy()),
                 config);
-        System.out.println("Setting up " + nodeName);
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     public void evaluate() {
         FlowGraph flow = stream.getGraph();
-        RosGraph graph = new RosGraph(flow, this);
-//        new GraphVisualizer().display(graph);
+        RosGraph graph = new RosGraph(flow, this::newTopic);
 
         // Run output node first
         Topic result = newTopic();
@@ -133,7 +129,7 @@ public class RosRunner extends AbstractNodeMain {
                     .map(RosEdge::getTopic)
                     .map((Function<Topic, SinkOutput>) SinkOutput::new)
                     .collect(Collectors.toList()));
-            Output outputToExecute = new MultipleOutput(list);
+            Output outputToExecute = (list.size() == 1) ? list.get(0) : new MultipleOutput(list);
 
             // Execute
             execute(new Stream(innerGraph, innerGraph.getConnectNode()), outputToExecute);

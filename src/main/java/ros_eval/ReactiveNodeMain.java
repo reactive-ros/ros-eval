@@ -16,7 +16,6 @@ import org.apache.commons.logging.Log;
  */
 public class ReactiveNodeMain extends AbstractNodeMain {
     private String graphName;
-    private Log log;
     private EvaluationStrategy evaluationStrategy;
 
     private Stream stream;
@@ -27,11 +26,9 @@ public class ReactiveNodeMain extends AbstractNodeMain {
      * @param stream the {@link Stream} to be evaluated by this {@link ReactiveNodeMain}
      * @param output the {@link Output} to redirect the evaluated stream
      * @param evaluationStrategy the {@link EvaluationStrategy} to use
-     * @param log the {@link Log} to output messages
      */
-    public ReactiveNodeMain(String graphName, Stream stream, Output output, EvaluationStrategy evaluationStrategy, Log log) {
+    public ReactiveNodeMain(String graphName, Stream stream, Output output, EvaluationStrategy evaluationStrategy) {
         this.graphName = graphName;
-        this.log = log;
         this.evaluationStrategy = evaluationStrategy;
         this.stream = stream;
         this.output = output;
@@ -48,17 +45,15 @@ public class ReactiveNodeMain extends AbstractNodeMain {
      */
     @Override
     public void onStart(ConnectedNode connectedNode) {
-        if (log == null)
-            log = connectedNode.getLog();
 
         /**
          * Display
          */
-        /*String label = graphName + " ["+ processInfo() + "]";
-        log.info("\n\n======================== " + label + " ========================"
-                + "\n" + stream.getGraph()
-                + "\n\t===>\t" + output + "\n"
-                + "\n=========================" + StringUtils.repeat("=", label.length()) + "=========================\"\n\n");*/
+            /*String label = graphName + " ["+ processInfo() + "]";
+            System.out.println("\n\n======================== " + label + " ========================"
+                    + "\n" + stream.getGraph()
+                    + "\n\t===>\t" + output + "\n"
+                    + "\n=========================" + StringUtils.repeat("=", label.length()) + "=========================\"\n\n");*/
         /**
          * Execute
          */

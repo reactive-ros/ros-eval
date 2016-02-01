@@ -1,10 +1,14 @@
 package ros_eval.ros_graph;
 
+import graph_viz.GraphVisualizer;
 import org.reactive_ros.internal.expressions.NoInputExpr;
 import org.reactive_ros.internal.expressions.Transformer;
 import org.reactive_ros.internal.graph.FlowGraph;
 import org.reactive_ros.internal.graph.SimpleEdge;
 import org.jgrapht.graph.DirectedPseudograph;
+import org.reactive_ros.util.functions.Func0;
+import ros_eval.RosRunner;
+import ros_eval.Topic;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,7 +19,7 @@ import java.util.stream.Collectors;
 public class RosGraph extends DirectedPseudograph<RosNode, RosEdge> {
     public Transformer toConnect;
 
-    public RosGraph(FlowGraph graph, RosRunner runner) {
+    public RosGraph(FlowGraph graph, Func0<Topic> topicGenerator) {
         super(RosEdge.class);
         // Copy FlowGraph
         toConnect = graph.getConnectNode();
@@ -35,7 +39,7 @@ public class RosGraph extends DirectedPseudograph<RosNode, RosEdge> {
         for (SimpleEdge e : graph.edgeSet()) {
             RosNode source = mapper.get(e.getSource());
             RosNode target = mapper.get(e.getTarget());
-            addEdge(source, target, new RosEdge(source, target, runner.newTopic()));
+            addEdge(source, target, new RosEdge(source, target, topicGenerator.call()));
         }
     }
 
