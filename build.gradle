@@ -50,9 +50,8 @@ artifacts {
 
 test {
 	testLogging {
-		//showStandardStreams true
 		displayGranularity 3
-		events 'passed', 'failed', 'standard_out'
+		events 'passed', 'failed', 'standard_out'//, 'standard_error'
 	}
 }
 

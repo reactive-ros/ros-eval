@@ -26,7 +26,7 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
             throw new RuntimeException(e);
         }
         config = NodeConfiguration.newPrivate(roscore.getUri());
-        runner = new RosRunner(executor, config, evaluationStrategy);
+        runner = new RosRunner(executor, roscore.getUri(), evaluationStrategy);
         this.evaluationStrategy = evaluationStrategy;
     }
 

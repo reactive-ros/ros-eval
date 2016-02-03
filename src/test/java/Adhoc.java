@@ -1,17 +1,8 @@
-import graph_viz.GraphVisualizer;
-import org.junit.Before;
 import org.reactive_ros.Stream;
-import org.reactive_ros.util.functions.Action1;
 import ros_eval.RosEvaluationStrategy;
-import ros_eval.Topic;
-import ros_eval.ros_graph.RosGraph;
 import rx_eval.RxjavaEvaluationStrategy;
-
 import org.junit.Test;
-
 import java.util.Arrays;
-
-import static org.junit.Assert.assertArrayEquals;
 
 /**
  * @author Orestis Melkonian
@@ -20,16 +11,23 @@ public class Adhoc {
 
     @Test
     public void ros() {
-        /*RosEvaluationStrategy eval = new RosEvaluationStrategy(new RxjavaEvaluationStrategy());
-        Stream.setEvaluationStrategy(eval);
+        Stream.setEvaluationStrategy(new RosEvaluationStrategy(new RxjavaEvaluationStrategy(true)));
+//        Stream.setEvaluationStrategy(new RxjavaEvaluationStrategy());
 
-        Stream<Integer> ints = Stream.just(0,10,20,30,40,50);
+        /*System.out.println(
+                Arrays.toString(Stream.concat(Stream.just(0, 1, 2), Stream.just(3, 4, 5)).toBlocking().toList().toArray())
+        );*/
+        
+        Stream.concat(Stream.just(0, 1, 2), Stream.just(3, 4, 5))
+              .subscribe(System.out::println, System.out::println, () -> System.out.println("Complete"));
+
+        /*Stream<Integer> ints = Stream.just(0,10,20,30,40,50);
         System.out.println(ints.toBlocking().toList());
         System.out.println(ints.map(i -> i + 1).toBlocking().toList());
         System.out.println(ints.map(i -> i + 2).toBlocking().toList());
-        System.out.println(ints.map(i -> i + 3).toBlocking().toList());
+        System.out.println(ints.map(i -> i + 3).toBlocking().toList());*/
 
-        sleep();*/
+        sleep();
     }
 
     private void print(Stream s) {

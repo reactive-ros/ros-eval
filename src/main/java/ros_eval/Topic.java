@@ -39,7 +39,6 @@ public class Topic<T> implements Source<T>, Sink<T>, Listener<T> {
         this.connectedNode = connectedNode;
 
         rosPublisher = connectedNode.newPublisher(topicName, topicType);
-        rosPublisher.setLatchMode(true);
         rosSubscriber = connectedNode.newSubscriber(topicName, topicType);
     }
 
@@ -60,78 +59,82 @@ public class Topic<T> implements Source<T>, Sink<T>, Listener<T> {
         connectedNode.<T>newSubscriber(topicName, topicType).addMessageListener(action::call);
     }
 
+
     /**
-     * Create a {@link Subscriber} from a ROS topic.
-     * @return a {@link Subscriber} that pushes everything he observes on {@link Topic}
+     * Subscriber implementation
      */
+    // Timing issues
+    long last = 0;
+    long cycle = 1000;
+
+    synchronized private void throttle() {
+        /*long diff = (last == 0) ? cycle : System.currentTimeMillis() - last;
+        if (diff <= cycle)
+            try { Thread.sleep(cycle - diff); } catch (InterruptedException ignored) {}
+        last = System.currentTimeMillis();*/
+        try {
+            Thread.sleep(cycle);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
-    public Subscriber<T> toSubscriber() {
-        return new Subscriber<T>() {
-            // Timing issues
-            long last = 0;
-            long cycle = 100;
+    public void onSubscribe(Subscription s) {
+        s.request(Long.MAX_VALUE);
+    }
 
-            private void throttle() {
-                long diff = (last == 0) ? cycle : System.currentTimeMillis() - last;
-                if (diff <= cycle)
-                    try { Thread.sleep(cycle - diff); } catch (InterruptedException ignored) {}
-                last = System.currentTimeMillis();
-            }
+    @Override
+    public void onNext(T t) {
+        throttle();
+        Notification<T> notification = Notification.createOnNext(t);
+        rosPublisher.publish(serializer.serialize(notification));
+        System.out.println(name() + ": Send\t" + notification.getValue());
+    }
 
-            @Override
-            public void onSubscribe(Subscription s) {
-                s.request(Long.MAX_VALUE);
-            }
+    @Override
+    public void onError(Throwable t) {
+        throttle();
+        Notification<T> notification = Notification.createOnError(t);
+        rosPublisher.publish(serializer.serialize(notification));
+    }
 
-            @Override
-            public void onNext(T t) {
-                throttle();
-                Notification<T> notification = Notification.createOnNext(t);
-                rosPublisher.publish(serializer.serialize(notification));
-//                System.out.println(topicName + "\t\t~~>\t" + notification.getValue());
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                throttle();
-                Notification<T> notification = Notification.createOnError(t);
-                rosPublisher.publish(serializer.serialize(notification));
-            }
-
-            @Override
-            public void onComplete() {
-                throttle();
-                Notification<T> notification = Notification.createOnCompleted();
-                rosPublisher.publish(serializer.serialize(notification));
-//                System.out.println(topicName + "\t\t~~>\t!");
-            }
-        };
+    @Override
+    public void onComplete() {
+        throttle();
+        Notification<T> notification = Notification.createOnCompleted();
+        rosPublisher.publish(serializer.serialize(notification));
+        System.out.println(name() + ": Send\tComplete");
     }
 
     /**
-     * Create a {@link Publisher} from a ROS topic.
-     * @return a {@link Publisher} that publishes anythings published on {@link Topic}
+     * Publisher implementation
      */
     @Override
-    public Publisher<T> toPublisher() {
-        return new Publisher<T>() {
-            @Override
-            public void subscribe(Subscriber<? super T> s) {
-                rosSubscriber.addMessageListener(msg -> {
-                    Notification<T> notification = serializer.deserialize(msg);
-                    Notification.Kind kind = notification.getKind();
-                    if (kind == Notification.Kind.OnCompleted) {
-//                        System.out.println("!\t\t~~>\t" + topicName);
-                        s.onComplete();
-                    }
-                    else if (kind == Notification.Kind.OnError)
-                        s.onError(notification.getThrowable());
-                    else {
-//                        System.out.println(notification.getValue() + "\t\t~~>\t" + topicName);
-                        s.onNext(notification.getValue());
-                    }
-                });
+    public void subscribe(Subscriber<? super T> s) {
+        rosSubscriber.addMessageListener(msg -> {
+            Notification<T> notification = serializer.deserialize(msg);
+            switch (notification.getKind()) {
+                case OnNext:
+                    System.out.println(name() + ": Recv\t" + notification.getValue());
+                    s.onNext(notification.getValue());
+                    break;
+                case OnError:
+                    s.onError(notification.getThrowable());
+                    break;
+                case OnCompleted:
+                    System.out.println(name() + ": Recv\tComplete");
+                    s.onComplete();
+                    break;
+                default:
             }
-        };
+        });
     }
+
+    private String name() {
+        return topicName + "[" + Thread.currentThread().getId() + "]";
+    }
+    public static final String RESET = "\u001B[0m";
+    public static final String GREEN = "\u001B[32m";
+    public static final String RED = "\u001B[31m";
 }

@@ -45,15 +45,7 @@ public class ReactiveNodeMain extends AbstractNodeMain {
      */
     @Override
     public void onStart(ConnectedNode connectedNode) {
-
-        /**
-         * Display
-         */
-            /*String label = graphName + " ["+ processInfo() + "]";
-            System.out.println("\n\n======================== " + label + " ========================"
-                    + "\n" + stream.getGraph()
-                    + "\n\t===>\t" + output + "\n"
-                    + "\n=========================" + StringUtils.repeat("=", label.length()) + "=========================\"\n\n");*/
+//        display();
         /**
          * Execute
          */
@@ -61,8 +53,13 @@ public class ReactiveNodeMain extends AbstractNodeMain {
         evaluationStrategy.evaluate(stream, output);
     }
 
-    private static String processInfo() {
-//        return ManagementFactory.getRuntimeMXBean().getName() + "@" + processInfo() + ": ";
-        return Thread.currentThread().getName();
+    private void display() {
+        String info = Thread.currentThread().getName();// ManagementFactory.getRuntimeMXBean().getName() + "@" + processInfo() + ": ";
+        String label = graphName + " ["+ info + "]";
+        System.out.println(
+                "\n\n======================== " + label + " ========================"
+                    + "\n" + stream.getGraph()
+                    + "\n\t===>\t" + output + "\n"
+                    + "\n=========================" + StringUtils.repeat("=", label.length()) + "=========================\"\n\n");
     }
 }

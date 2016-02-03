@@ -8,6 +8,7 @@ import org.reactive_ros.internal.expressions.MultipleInputExpr;
 import org.reactive_ros.internal.expressions.NoInputExpr;
 import org.reactive_ros.internal.expressions.SingleInputExpr;
 import org.reactive_ros.internal.expressions.Transformer;
+import org.reactive_ros.internal.expressions.creation.FromListener;
 import org.reactive_ros.internal.expressions.creation.FromSource;
 import org.reactive_ros.internal.graph.FlowGraph;
 import org.reactive_ros.internal.output.MultipleOutput;
@@ -20,6 +21,8 @@ import ros_eval.Topic;
 import ros_eval.ros_graph.RosEdge;
 import ros_eval.ros_graph.RosGraph;
 import ros_eval.ros_graph.RosNode;
+
+import java.net.URI;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,7 +32,7 @@ import java.util.stream.Collectors;
  */
 public class RosRunner extends AbstractNodeMain {
     NodeMainExecutor exec;
-    NodeConfiguration config;
+    URI uri;
     EvaluationStrategy evalStrategy;
     ConnectedNode connectedNode;
 
@@ -40,9 +43,9 @@ public class RosRunner extends AbstractNodeMain {
     Stream stream;
 
     Output output;
-    public RosRunner(NodeMainExecutor exec, NodeConfiguration config, EvaluationStrategy evalStrategy) {
+    public RosRunner(NodeMainExecutor exec, URI uri, EvaluationStrategy evalStrategy) {
         this.exec = exec;
-        this.config = config;
+        this.uri = uri;
         this.evalStrategy = evalStrategy;
     }
 
@@ -74,7 +77,12 @@ public class RosRunner extends AbstractNodeMain {
         String nodeName = newName();
         exec.execute(
                 new ReactiveNodeMain(nodeName, stream, output, evalStrategy.newStrategy()),
-                config);
+                NodeConfiguration.newPrivate(uri));
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void evaluate() {
@@ -137,4 +145,6 @@ public class RosRunner extends AbstractNodeMain {
             checked.add(toExecute);
         }
     }
+
+
 }
