@@ -55,10 +55,10 @@ public class Tester {
 
     private Iterable<TestInfo> setUp() {
         Tests tests = new Tests();
-        tests.put("from",
+        /*tests.put("from",
                 Stream.from(Arrays.asList(1, 2, 3, 4, 5)),
                 Stream.just(1, 2, 3, 4, 5)
-        );
+        );*/
         tests.put("defer",
                 Stream.defer(() -> Stream.just(1, 2, 3, 4, 5)),
                 Stream.just(1,2,3,4,5)

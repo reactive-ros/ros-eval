@@ -18,6 +18,8 @@ import std_msgs.ByteMultiArray;
  */
 public class Topic<T> implements Source<T>, Sink<T>, Listener<T> {
 
+    private static final boolean DEBUG = false;
+
     // Topic info
     public String topicName;
     public String topicType = ByteMultiArray._TYPE;
@@ -65,7 +67,7 @@ public class Topic<T> implements Source<T>, Sink<T>, Listener<T> {
      */
     // Timing issues
     long last = 0;
-    long cycle = 1000;
+    long cycle = 250;
 
     synchronized private void throttle() {
         /*long diff = (last == 0) ? cycle : System.currentTimeMillis() - last;
@@ -89,7 +91,8 @@ public class Topic<T> implements Source<T>, Sink<T>, Listener<T> {
         throttle();
         Notification<T> notification = Notification.createOnNext(t);
         rosPublisher.publish(serializer.serialize(notification));
-        System.out.println(name() + ": Send\t" + notification.getValue());
+        if (DEBUG)
+            System.out.println(name() + ": Send\t" + notification.getValue());
     }
 
     @Override
@@ -104,7 +107,8 @@ public class Topic<T> implements Source<T>, Sink<T>, Listener<T> {
         throttle();
         Notification<T> notification = Notification.createOnCompleted();
         rosPublisher.publish(serializer.serialize(notification));
-        System.out.println(name() + ": Send\tComplete");
+        if (DEBUG)
+            System.out.println(name() + ": Send\tComplete");
     }
 
     /**
@@ -116,14 +120,16 @@ public class Topic<T> implements Source<T>, Sink<T>, Listener<T> {
             Notification<T> notification = serializer.deserialize(msg);
             switch (notification.getKind()) {
                 case OnNext:
-                    System.out.println(name() + ": Recv\t" + notification.getValue());
+                    if (DEBUG)
+                        System.out.println(name() + ": Recv\t" + notification.getValue());
                     s.onNext(notification.getValue());
                     break;
                 case OnError:
                     s.onError(notification.getThrowable());
                     break;
                 case OnCompleted:
-                    System.out.println(name() + ": Recv\tComplete");
+                    if (DEBUG)
+                        System.out.println(name() + ": Recv\tComplete");
                     s.onComplete();
                     break;
                 default:

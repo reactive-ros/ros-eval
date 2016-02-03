@@ -79,7 +79,7 @@ public class RosRunner extends AbstractNodeMain {
                 new ReactiveNodeMain(nodeName, stream, output, evalStrategy.newStrategy()),
                 NodeConfiguration.newPrivate(uri));
         try {
-            Thread.sleep(3000);
+            Thread.sleep(50);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -43,7 +43,7 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
 
     @Override
     public EvaluationStrategy newStrategy() {
-        return new RosEvaluationStrategy(evaluationStrategy);
+        return new RosEvaluationStrategy(evaluationStrategy.newStrategy());
     }
 
 }
