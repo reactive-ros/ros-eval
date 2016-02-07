@@ -6,7 +6,7 @@ import ros_eval.Topic;
 /**
  * @author Orestis Melkonian
  */
-public class    RosEdge extends DefaultEdge {
+public class RosEdge extends DefaultEdge {
     private RosNode source;
     private RosNode target;
     private Topic topic;

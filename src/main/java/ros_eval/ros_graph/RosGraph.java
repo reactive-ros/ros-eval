@@ -7,7 +7,6 @@ import org.reactive_ros.internal.graph.FlowGraph;
 import org.reactive_ros.internal.graph.SimpleEdge;
 import org.jgrapht.graph.DirectedPseudograph;
 import org.reactive_ros.util.functions.Func0;
-import ros_eval.RosRunner;
 import ros_eval.Topic;
 
 import java.util.*;
