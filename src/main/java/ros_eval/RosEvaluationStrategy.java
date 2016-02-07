@@ -19,7 +19,6 @@ import ros_eval.ros_graph.RosEdge;
 import ros_eval.ros_graph.RosGraph;
 import ros_eval.ros_graph.RosNode;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Function;
@@ -50,16 +49,15 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
     NodeConfiguration config;
 
     String nodePrefix = "~";
-    int topicCounter = 0;
-    int topicName = 0;
+    int topicCounter = 0, nodeCounter = 0;
 
-    long delay = 0;
+    long delay = 250;
 
     /**
      * Generators
      */
     private String newName() {
-        return nodePrefix + "_" + Integer.toString(topicName++);
+        return nodePrefix + "_" + Integer.toString(nodeCounter++);
     }
 
     public Topic newTopic() {

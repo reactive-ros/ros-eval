@@ -133,11 +133,12 @@ public class Topic<T> implements Source<T>, Sink<T> {
 
     private class BlockQueue {
         BlockingQueue<Object> queue = new ArrayBlockingQueue<>(1);
-        long delay = 150;
+        long delay = 250;
 
         public void block() {
             if (DEBUG)
                 System.out.println("[" + Thread.currentThread().getId() + "] Blocking");
+
             try {
                 queue.put(new Object());
             } catch (InterruptedException e) {
@@ -148,6 +149,7 @@ public class Topic<T> implements Source<T>, Sink<T> {
         public void unblock() {
             if (DEBUG)
                 System.out.println("[" + Thread.currentThread().getId() + "] Unblocking");
+
             try {
                 Thread.sleep(delay);
             } catch (InterruptedException e) {
