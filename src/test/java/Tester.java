@@ -1,5 +1,3 @@
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 import org.reactive_ros.Stream;
 import ros_eval.RosEvaluationStrategy;
@@ -14,14 +12,18 @@ import test_data.utilities.Colors;
 public class Tester {
     @Test
     public void test() {
-        Stream.setEvaluationStrategy(new RosEvaluationStrategy(() -> new RxjavaEvaluationStrategy()));
+        Stream.setEvaluationStrategy(new RosEvaluationStrategy(() -> new RxjavaEvaluationStrategy(true)));
         
         for (TestInfo test : TestData.tests()) {
             if (test.name.equals("concat")) continue;
 
             System.out.print(test.name + ": ");
-            assertTrue(test.equality());
-            Colors.print(Colors.GREEN , "PASSED");
+            if (test.equality())
+                Colors.print(Colors.GREEN, "Passed");
+            else {
+                Colors.print(Colors.RED, "Failed");
+                System.out.println(test.q1 + " != " + test.q2);
+            }
         }
     }
 }

@@ -51,7 +51,7 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
     String nodePrefix = "~";
     int topicCounter = 0, nodeCounter = 0;
 
-    long delay = 250;
+    long delay = 500;
 
     /**
      * Generators

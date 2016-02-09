@@ -133,7 +133,7 @@ public class Topic<T> implements Source<T>, Sink<T> {
 
     private class BlockQueue {
         BlockingQueue<Object> queue = new ArrayBlockingQueue<>(1);
-        long delay = 250;
+        long delay = 500;
 
         public void block() {
             if (DEBUG)
