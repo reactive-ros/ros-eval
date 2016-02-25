@@ -1,7 +1,7 @@
 package ros_eval.ros_graph;
 
 import org.jgrapht.graph.DefaultEdge;
-import ros_eval.Topic;
+import ros_eval.RosTopic;
 
 /**
  * @author Orestis Melkonian
@@ -9,15 +9,15 @@ import ros_eval.Topic;
 public class RosEdge extends DefaultEdge {
     private RosNode source;
     private RosNode target;
-    private Topic topic;
+    private RosTopic topic;
 
-    public RosEdge(RosNode v1, RosNode v2, Topic topic) {
+    public RosEdge(RosNode v1, RosNode v2, RosTopic topic) {
         this.source = v1;
         this.target = v2;
         this.topic = topic;
     }
 
-    public Topic getTopic() {
+    public RosTopic getTopic() {
         return topic;
     }
 
@@ -45,6 +45,6 @@ public class RosEdge extends DefaultEdge {
 
     @Override
     public String toString() {
-        return topic.topicName;
+        return topic.getName();
     }
 }

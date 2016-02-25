@@ -15,6 +15,8 @@ import org.reactive_ros.util.functions.Func0;
 import org.ros.RosCore;
 import org.ros.namespace.GraphName;
 import org.ros.node.*;
+import remote_execution.RemoteExecution;
+import remote_execution.StreamTask;
 import ros_eval.ros_graph.RosEdge;
 import ros_eval.ros_graph.RosGraph;
 import ros_eval.ros_graph.RosNode;
@@ -39,7 +41,8 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
     /**
      * ROS setup
      */
-    final NodeMainExecutor executor = DefaultNodeMainExecutor.newDefault();
+    final NodeMainExecutor rosExecutor = DefaultNodeMainExecutor.newDefault();
+    final RemoteExecution executor = new RemoteExecution(); // TODO add machines
     final RosCore roscore = RosCore.newPublic();
     ConnectedNode connectedNode;
     public void setConnectedNode(ConnectedNode connectedNode) {
@@ -60,8 +63,8 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
         return nodePrefix + "_" + Integer.toString(nodeCounter++);
     }
 
-    public Topic newTopic() {
-        return new Topic(nodePrefix + "/" + Integer.toString(topicCounter++), connectedNode);
+    public RosTopic newTopic() {
+        return new RosTopic(nodePrefix + "/" + Integer.toString(topicCounter++));
     }
 
     /**
@@ -77,7 +80,7 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
         config = NodeConfiguration.newPrivate(roscore.getUri());
         this.evaluationStrategy = evaluationStrategy;
 
-        executor.execute(new Initiator(this::setConnectedNode, latch), config);
+        rosExecutor.execute(new Initiator(this::setConnectedNode, latch), config);
     }
 
     public RosEvaluationStrategy(Func0<EvaluationStrategy> evaluationStrategy, String nodePrefix) {
@@ -88,13 +91,9 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
     /**
      * Evaluation
      */
-    private void execute(Stream stream, Output output) {
-        // TODO Network layout
+    private void execute(Queue<StreamTask> tasks) {
         String nodeName = newName();
-        executor.execute(
-                new ReactiveNodeMain(nodeName, stream, output, evaluationStrategy.call()),
-                NodeConfiguration.newPrivate(roscore.getUri()));
-
+        executor.submit(tasks);
         try {
             Thread.sleep(delay);
         } catch (InterruptedException e) {
@@ -110,14 +109,17 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
             e.printStackTrace();
         }
 
+        Queue<StreamTask> tasks = new LinkedList<>();
+
         FlowGraph flow = stream.getGraph();
         RosGraph graph = new RosGraph(flow, this::newTopic);
 
         // Run output node first
-        Topic result = newTopic();
+        RosTopic result = newTopic();
         FlowGraph resultNode = new FlowGraph();
         resultNode.addConnectVertex(Stream.from(result).getToConnect());
-        execute(new Stream(resultNode), output);
+
+        tasks.add(new StreamTask(evaluationStrategy, new Stream(resultNode), output, Collections.singletonList("Ros")));
 
         // Then run each graph vertex as an individual ROS node (reverse BFS)
         Set<RosNode> checked = new HashSet<>();
@@ -139,7 +141,7 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
             } else if (transformer instanceof SingleInputExpr) {
                 assert inputs.size() == 1;
                 // 1 input
-                Topic input = inputs.iterator().next().getTopic();
+                RosTopic input = inputs.iterator().next().getTopic();
                 Transformer toAdd = new FromSource<>(input);
                 innerGraph.addConnectVertex(toAdd);
                 innerGraph.attach(transformer);
@@ -159,15 +161,18 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
                 list.add(new SinkOutput<>(result));
             list.addAll(outputs.stream()
                     .map(RosEdge::getTopic)
-                    .map((Function<Topic, SinkOutput>) SinkOutput::new)
+                    .map((Function<RosTopic, SinkOutput>) SinkOutput::new)
                     .collect(Collectors.toList()));
             Output outputToExecute = (list.size() == 1) ? list.get(0) : new MultipleOutput(list);
 
-            // Execute
-            execute(new Stream(innerGraph, innerGraph.getConnectNode()), outputToExecute);
+            // Schedule for execution
+            tasks.add(new StreamTask(evaluationStrategy, new Stream(innerGraph), outputToExecute, Collections.singletonList("Ros")));
 
             checked.add(toExecute);
         }
+
+        // Submit the tasks for execution
+        execute(tasks);
     }
 
     /**

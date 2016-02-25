@@ -1,9 +1,7 @@
 package ros_eval;
 
-import org.reactive_ros.evaluation.Serializer;
-import org.reactive_ros.internal.io.Sink;
-import org.reactive_ros.internal.io.Source;
 import org.reactive_ros.internal.notifications.Notification;
+import org.reactive_ros.io.AbstractTopic;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.ros.node.ConnectedNode;
@@ -13,48 +11,29 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 /**
- * Information needed for a ROS topic.
+ * ROS implementation of {@link AbstractTopic}.
  * @author Orestis Melkonian
  */
-public class Topic<T> implements Source<T>, Sink<T> {
+public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray> {
 
     static final boolean DEBUG = false;
+    static final String type = ByteMultiArray._TYPE;
 
-    // Topic info
-    public String topicName;
-    public String topicType = ByteMultiArray._TYPE;
-
-    // ROS
-    final Serializer<ByteMultiArray> serializer = new RosSerializer();
     org.ros.node.topic.Publisher<ByteMultiArray> rosPublisher;
     org.ros.node.topic.Subscriber<ByteMultiArray> rosSubscriber;
 
     /**
-     * Constructors
-     * @param topicName the name of this Topic
-     * @param connectedNode the ROS node to connect to
+     * Constructor
+     * @param name the name of this RosTopic
      */
-    public Topic(String topicName, ConnectedNode connectedNode) {
-        this.topicName = topicName;
-        rosPublisher = connectedNode.newPublisher(topicName, topicType);
-        rosSubscriber = connectedNode.newSubscriber(topicName, topicType);
+    public RosTopic(String name) {
+        super(name, new RosSerializer());
     }
 
-    public Topic(String topicName, String topicType, ConnectedNode connectedNode) {
-        this(topicName, connectedNode);
-        this.topicType = topicType;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj != null && obj instanceof Topic
-                && topicName.equals(((Topic) obj).topicName)
-                && topicType.equals(((Topic) obj).topicType);
-    }
-
-    @Override
-    public String toString() {
-        return topicName + " [" + topicType + "]";
+    public void setClient(Object client) {
+        ConnectedNode connectedNode = (ConnectedNode) client;
+        rosPublisher = connectedNode.newPublisher(name, type);
+        rosSubscriber = connectedNode.newSubscriber(name, type);
     }
 
     /**
@@ -125,10 +104,6 @@ public class Topic<T> implements Source<T>, Sink<T> {
                 default:
             }
         });
-    }
-
-    private String name() {
-        return topicName + "[" + Thread.currentThread().getId() + "]";
     }
 
     private class BlockQueue {
