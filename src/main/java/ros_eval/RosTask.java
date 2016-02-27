@@ -4,10 +4,11 @@ import org.reactive_ros.Stream;
 import org.reactive_ros.internal.graph.FlowGraph;
 import org.reactive_ros.internal.output.Output;
 import org.reactive_ros.io.AbstractTopic;
+import org.reactive_ros.util.functions.Func0;
 import org.ros.namespace.GraphName;
-import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
 import org.reactive_ros.evaluation.EvaluationStrategy;
+import remote_execution.StreamTask;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,49 +17,31 @@ import java.util.stream.Collectors;
  * A ROS node that executes a given {@link FlowGraph} and redirects the resulting stream to given {@link Output}.
  * @author Orestis Melkonian
  */
-public class RosRunnable extends AbstractNodeMain implements Runnable {
+public class RosTask extends StreamTask {
+    private String broker;
     private String name;
-    private EvaluationStrategy evaluationStrategy;
 
-    private Stream stream;
-    private Output output;
-
-    /**
-     * @param name the graph name of this {@link RosRunnable}
-     * @param stream the {@link Stream} to be evaluated by this {@link RosRunnable}
-     * @param output the {@link Output} to redirect the evaluated stream
-     * @param evaluationStrategy the {@link EvaluationStrategy} to use
-     */
-    public RosRunnable(String name, Stream stream, Output output, EvaluationStrategy evaluationStrategy) {
+    public RosTask(Func0<EvaluationStrategy> strategyGen, Stream stream, Output output, List<String> attr, String broker, String name) {
+        super(strategyGen, stream, output, attr);
+        this.broker = broker;
         this.name = name;
-        this.evaluationStrategy = evaluationStrategy;
-        this.stream = stream;
-        this.output = output;
+    }
+
+    public RosTask(StreamTask task, String broker, String name) {
+        this(task.getStrategyGenerator(), task.getStream(), task.getOutput(), task.getRequiredAttributes, broker, name);
     }
 
     @Override
-    public GraphName getDefaultNodeName() {
-        return GraphName.of(name);
-    }
-
-    /**
-     * Evaluates this {@link RosRunnable}'s {@link FlowGraph}.
-     * @param connectedNode automatically passed from rosjava
-     */
-    @Override
-    public void onStart(ConnectedNode connectedNode) {
+    public void run() {
 //        display();
+        // TODO get ConnectedNode
+
         List<RosTopic> topics = AbstractTopic.extract(stream, output).stream().map(t -> ((RosTopic) t)).collect(Collectors.toList());
 
         for (RosTopic topic : topics)
             topic.setClient(connectedNode);
 
-        evaluationStrategy.evaluate(stream, output);
-    }
-
-    @Override
-    public void run() {
-
+        super.run();
     }
 
     private void display() {
