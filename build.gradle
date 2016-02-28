@@ -34,7 +34,6 @@ dependencies {
 	compile 'com.github.reactive-ros:remote-execution:-SNAPSHOT'
 
 	// Testing
-	testCompile 'com.github.reactive-ros:graph-viz:-SNAPSHOT'
 	testCompile 'junit:junit:4.11'
 	testCompile 'com.github.reactive-ros:rx-eval:-SNAPSHOT'
 	testCompile 'com.github.reactive-ros:test-data:-SNAPSHOT'

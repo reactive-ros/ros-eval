@@ -138,4 +138,9 @@ public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray> {
             }
         }
     }
+
+    @Override
+    public RosTopic clone() {
+        return new RosTopic(name);
+    }
 }
