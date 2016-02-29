@@ -1,5 +1,6 @@
 import org.junit.Test;
 import org.reactive_ros.Stream;
+import remote_execution.Broker;
 import ros_eval.RosEvaluationStrategy;
 import rx_eval.RxjavaEvaluationStrategy;
 import test_data.TestData;
@@ -12,7 +13,7 @@ import test_data.utilities.Colors;
 public class Tester {
     @Test
     public void test() {
-        Stream.setEvaluationStrategy(new RosEvaluationStrategy(() -> new RxjavaEvaluationStrategy(true)));
+        Stream.setEvaluationStrategy(new RosEvaluationStrategy(RxjavaEvaluationStrategy::new, new Broker("http://orestis-B85M-HD3", 11311)));
         
         for (TestInfo test : TestData.tests()) {
             if (test.name.equals("concat")) continue;
