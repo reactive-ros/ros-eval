@@ -1,5 +1,5 @@
 import org.junit.Test;
-import org.reactive_ros.Stream;
+import org.rhea_core.Stream;
 import remote_execution.Broker;
 import ros_eval.RosEvaluationStrategy;
 import rx_eval.RxjavaEvaluationStrategy;

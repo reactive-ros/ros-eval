@@ -1,5 +1,5 @@
 import org.junit.Test;
-import org.reactive_ros.util.functions.Action1;
+import org.rhea_core.util.functions.Action1;
 import org.ros.RosCore;
 import org.ros.namespace.GraphName;
 import org.ros.node.*;

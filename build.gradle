@@ -13,7 +13,7 @@ repositories {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-group = "com.github.reactive-ros"
+group = "com.github.rhea-flow"
 version = 1.0
 
 configurations.all {
@@ -21,8 +21,8 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 dependencies {	
-	// reactive-ros
-	compile 'com.github.reactive-ros:reactive-ros:-SNAPSHOT'
+	// rhea-flow
+	compile 'com.github.rhea-flow:rhea-core:-SNAPSHOT'
 
 	// ros
 	compile 'org.ros.rosjava_core:rosjava:0.2.1'
@@ -31,12 +31,12 @@ dependencies {
 	compile 'com.cedarsoftware:json-io:4.1.9'
 
 	// Distribution
-	compile 'com.github.reactive-ros:remote-execution:-SNAPSHOT'
+	compile 'com.github.rhea-flow:remote-execution:-SNAPSHOT'
 
 	// Testing
 	testCompile 'junit:junit:4.11'
-	testCompile 'com.github.reactive-ros:rx-eval:-SNAPSHOT'
-	testCompile 'com.github.reactive-ros:test-data:-SNAPSHOT'
+	testCompile 'com.github.rhea-flow:rx-eval:-SNAPSHOT'
+	testCompile 'com.github.rhea-flow:test-data:-SNAPSHOT'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

@@ -1,7 +1,7 @@
 package ros_eval;
 
-import org.reactive_ros.internal.notifications.Notification;
-import org.reactive_ros.io.AbstractTopic;
+import org.rhea_core.internal.notifications.Notification;
+import org.rhea_core.io.AbstractTopic;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.ros.node.ConnectedNode;
@@ -14,7 +14,7 @@ import java.util.concurrent.BlockingQueue;
  * ROS implementation of {@link AbstractTopic}.
  * @author Orestis Melkonian
  */
-public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray> {
+public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray, ConnectedNode> {
 
     static final boolean DEBUG = false;
     static final String type = ByteMultiArray._TYPE;
@@ -30,10 +30,9 @@ public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray> {
         super(name, new RosSerializer());
     }
 
-    public void setClient(Object client) {
-        ConnectedNode connectedNode = (ConnectedNode) client;
-        rosPublisher = connectedNode.newPublisher(name, type);
-        rosSubscriber = connectedNode.newSubscriber(name, type);
+    public void setClient(ConnectedNode client) {
+        rosPublisher = client.newPublisher(name, type);
+        rosSubscriber = client.newSubscriber(name, type);
     }
 
     /**
