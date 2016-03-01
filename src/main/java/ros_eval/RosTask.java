@@ -3,7 +3,6 @@ package ros_eval;
 import org.rhea_core.Stream;
 import org.rhea_core.internal.graph.FlowGraph;
 import org.rhea_core.internal.output.Output;
-import org.rhea_core.io.AbstractTopic;
 import org.rhea_core.util.functions.Action1;
 import org.rhea_core.util.functions.Func0;
 import org.rhea_core.evaluation.EvaluationStrategy;
@@ -15,7 +14,6 @@ import remote_execution.StreamTask;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.stream.Collectors;
 
 /**
  * A ROS node that executes a given {@link FlowGraph} and redirects the resulting stream to given {@link Output}.
@@ -62,8 +60,7 @@ public class RosTask extends StreamTask {
         }
 
         // Set client on Topics
-        List<RosTopic> topics = AbstractTopic.extract(stream, output).stream().map(t -> ((RosTopic) t)).collect(Collectors.toList());
-        for (RosTopic topic : topics)
+        for (RosTopic topic : RosTopic.extract(stream, output))
             topic.setClient(connectedNode[0]);
 
         super.run();

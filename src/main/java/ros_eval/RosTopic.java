@@ -1,12 +1,16 @@
 package ros_eval;
 
+import org.rhea_core.Stream;
 import org.rhea_core.internal.notifications.Notification;
+import org.rhea_core.internal.output.Output;
 import org.rhea_core.io.AbstractTopic;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.ros.node.ConnectedNode;
 import std_msgs.ByteMultiArray;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -141,5 +145,17 @@ public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray, ConnectedNode>
     @Override
     public RosTopic clone() {
         return new RosTopic(name);
+    }
+
+    public static List<RosTopic> extract(Stream stream, Output output) {
+        List<RosTopic> topics = new ArrayList<>();
+
+        for (AbstractTopic topic : AbstractTopic.extractAll(stream, output))
+            if (topic instanceof RosTopic)
+                topics.add(((RosTopic) topic));
+            else
+                throw new RuntimeException("Unknown AbstractTopic.");
+
+        return topics;
     }
 }
