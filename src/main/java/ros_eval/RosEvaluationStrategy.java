@@ -2,6 +2,9 @@ package ros_eval;
 
 import org.jgrapht.traverse.BreadthFirstIterator;
 import org.rhea_core.Stream;
+import org.rhea_core.distribution.Broker;
+import org.rhea_core.distribution.Distributor;
+import org.rhea_core.distribution.StreamTask;
 import org.rhea_core.evaluation.EvaluationStrategy;
 import org.rhea_core.internal.expressions.MultipleInputExpr;
 import org.rhea_core.internal.expressions.NoInputExpr;
@@ -11,9 +14,6 @@ import org.rhea_core.internal.expressions.creation.FromSource;
 import org.rhea_core.internal.graph.FlowGraph;
 import org.rhea_core.internal.output.*;
 import org.rhea_core.util.functions.Func0;
-import remote_execution.Broker;
-import remote_execution.RemoteExecution;
-import remote_execution.StreamTask;
 import ros_eval.ros_graph.RosEdge;
 import ros_eval.ros_graph.RosGraph;
 import ros_eval.ros_graph.RosNode;
@@ -29,9 +29,9 @@ import java.util.stream.Collectors;
  */
 public class RosEvaluationStrategy implements EvaluationStrategy {
 
-    final RemoteExecution executor = new RemoteExecution(); // TODO add machines
     Func0<EvaluationStrategy> evaluationStrategy;
     Broker broker;
+    Distributor executor;
 
     /**
      * Constructors
