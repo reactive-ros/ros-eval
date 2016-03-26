@@ -20,6 +20,12 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
     String broker;
     String clientName;
 
+    public RosEvaluationStrategy(EvaluationStrategy innerStrategy, String broker, String clientName) {
+        this.innerStrategy = innerStrategy;
+        this.broker = broker;
+        this.clientName = clientName;
+    }
+
     @Override
     public <T> void evaluate(Stream<T> stream, Output output) {
         // Set client
