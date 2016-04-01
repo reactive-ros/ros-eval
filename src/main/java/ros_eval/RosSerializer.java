@@ -2,12 +2,12 @@ package ros_eval;
 
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
-import org.rhea_core.evaluation.Serializer;
 import org.rhea_core.Stream;
 import org.apache.commons.lang.SerializationUtils;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
-import org.rhea_core.internal.notifications.Notification;
+import org.rhea_core.internal.Notification;
+import org.rhea_core.serialization.Serializer;
 import org.ros.internal.message.Message;
 import org.ros.message.MessageDeserializer;
 import org.ros.message.MessageFactory;

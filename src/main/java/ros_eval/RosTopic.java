@@ -1,7 +1,8 @@
 package ros_eval;
 
 import org.rhea_core.Stream;
-import org.rhea_core.internal.notifications.Notification;
+import org.rhea_core.annotations.PlacementConstraint;
+import org.rhea_core.internal.Notification;
 import org.rhea_core.internal.output.Output;
 import org.rhea_core.io.AbstractTopic;
 import org.reactivestreams.Subscriber;
@@ -18,6 +19,7 @@ import java.util.concurrent.BlockingQueue;
  * ROS implementation of {@link AbstractTopic}.
  * @author Orestis Melkonian
  */
+@PlacementConstraint(constraint = "ros")
 public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray, ConnectedNode> {
 
     static final boolean DEBUG = false;

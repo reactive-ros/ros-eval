@@ -2,6 +2,7 @@ package ros_eval;
 
 
 import org.rhea_core.Stream;
+import org.rhea_core.annotations.StrategyInfo;
 import org.rhea_core.evaluation.EvaluationStrategy;
 import org.rhea_core.internal.output.Output;
 import org.rhea_core.util.functions.Action1;
@@ -14,6 +15,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * @author Orestis Melkonian
  */
+@StrategyInfo(name = "ros", requiredSkills = {"Ros"}, priority = 1)
 public class RosEvaluationStrategy implements EvaluationStrategy {
 
     EvaluationStrategy innerStrategy;
