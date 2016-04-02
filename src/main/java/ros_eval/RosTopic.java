@@ -22,7 +22,6 @@ import java.util.concurrent.BlockingQueue;
 @PlacementConstraint(constraint = "ros")
 public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray, ConnectedNode> {
 
-    static final boolean DEBUG = false;
     static final String type = ByteMultiArray._TYPE;
 
     org.ros.node.topic.Publisher<ByteMultiArray> rosPublisher;
@@ -57,7 +56,7 @@ public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray, ConnectedNode>
 
         Notification<T> notification = Notification.createOnNext(t);
         rosPublisher.publish(serializer.serialize(notification));
-        if (DEBUG)
+        if (Stream.DEBUG)
             System.out.println(name() + ": Send\t" + notification.getValue());
 
         queue.unblock();
@@ -79,7 +78,7 @@ public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray, ConnectedNode>
 
         Notification<T> notification = Notification.createOnCompleted();
         rosPublisher.publish(serializer.serialize(notification));
-        if (DEBUG)
+        if (Stream.DEBUG)
             System.out.println(name() + ": Send\tComplete");
 
         queue.unblock();
@@ -94,7 +93,7 @@ public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray, ConnectedNode>
             Notification<T> notification = serializer.deserialize(msg);
             switch (notification.getKind()) {
                 case OnNext:
-                    if (DEBUG)
+                    if (Stream.DEBUG)
                         System.out.println(name() + ": Recv\t" + notification.getValue());
                     s.onNext(notification.getValue());
                     break;
@@ -102,7 +101,7 @@ public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray, ConnectedNode>
                     s.onError(notification.getThrowable());
                     break;
                 case OnCompleted:
-                    if (DEBUG)
+                    if (Stream.DEBUG)
                         System.out.println(name() + ": Recv\tComplete");
                     s.onComplete();
                     break;
@@ -116,7 +115,7 @@ public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray, ConnectedNode>
         long delay = 500;
 
         public void block() {
-            if (DEBUG)
+            if (Stream.DEBUG)
                 System.out.println("[" + Thread.currentThread().getId() + "] Blocking");
 
             try {
@@ -127,7 +126,7 @@ public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray, ConnectedNode>
         }
 
         public void unblock() {
-            if (DEBUG)
+            if (Stream.DEBUG)
                 System.out.println("[" + Thread.currentThread().getId() + "] Unblocking");
 
             try {
@@ -155,8 +154,6 @@ public class RosTopic<T> extends AbstractTopic<T, ByteMultiArray, ConnectedNode>
         for (AbstractTopic topic : AbstractTopic.extractAll(stream, output))
             if (topic instanceof RosTopic)
                 topics.add(((RosTopic) topic));
-            else
-                throw new RuntimeException("Unknown AbstractTopic.");
 
         return topics;
     }
