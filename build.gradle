@@ -34,6 +34,8 @@ dependencies {
 	testCompile 'junit:junit:4.11'
 	testCompile 'com.github.rhea-flow:rx-eval:-SNAPSHOT'
 	testCompile 'com.github.rhea-flow:test-data:-SNAPSHOT'
+	testCompile 'com.github.rhea-flow:hazelcast-distribution:-SNAPSHOT'
+	testCompile 'org.ros.rosjava_messages:sensor_msgs:1.11.7'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -54,9 +56,9 @@ artifacts {
 test {
 	testLogging {
 		displayGranularity 3
-		events 'passed', 'failed', 'standard_out'
+		//events 'passed', 'failed', 'standard_out'
 		//events 'passed', 'failed', 'standard_error'
-		//events 'passed', 'failed', 'standard_out', 'standard_error'
+		events 'passed', 'failed', 'standard_out', 'standard_error'
 	}
 }
 
