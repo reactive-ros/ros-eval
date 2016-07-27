@@ -17,7 +17,7 @@ public class RosRun {
         RosCore roscore = RosCore.newPublic();
         NodeMainExecutor executor = DefaultNodeMainExecutor.newDefault();
         NodeConfiguration config;
-        final ConnectedNode[] connectedNode = new ConnectedNode[1];
+        ConnectedNode[] connectedNode = new ConnectedNode[1];
         CountDownLatch latch = new CountDownLatch(1);
 
         roscore.start();

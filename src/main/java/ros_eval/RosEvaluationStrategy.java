@@ -22,26 +22,31 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
     String broker;
     String clientName;
 
+    ConnectedNode[] connectedNode = new ConnectedNode[1];
+
     public RosEvaluationStrategy(EvaluationStrategy innerStrategy, String broker, String clientName) {
         this.innerStrategy = innerStrategy;
         this.broker = broker;
         this.clientName = clientName;
-    }
 
-    @Override
-    public <T> void evaluate(Stream<T> stream, Output output) {
         // Set client
         NodeMainExecutor executor = DefaultNodeMainExecutor.newDefault();
         NodeConfiguration config = NodeConfiguration.newPublic(broker);
-        final ConnectedNode[] connectedNode = new ConnectedNode[1];
+        connectedNode = new ConnectedNode[1];
         CountDownLatch latch = new CountDownLatch(1);
 
         executor.execute(new Initiator(c -> { connectedNode[0] = c; }, latch, clientName), config);
 
         try { latch.await(); } catch (InterruptedException e) { e.printStackTrace(); }
+    }
 
-        for (RosTopic topic : RosTopic.extract(stream, output))
+    @Override
+    public <T> void evaluate(Stream<T> stream, Output output) {
+
+        for (RosTopic topic : RosTopic.extract(stream, output)) {
+            System.out.println(topic);
             topic.setClient(connectedNode[0]);
+        }
 
         // Propagate evaluation to first-order strategy
         innerStrategy.evaluate(stream, output);

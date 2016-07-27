@@ -1,31 +1,13 @@
-import com.hazelcast.config.Config;
-import com.hazelcast.config.MemberAttributeConfig;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
-import hazelcast_distribution.HazelcastDistributionStrategy;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Test;
 import org.rhea_core.Stream;
-import org.rhea_core.network.Machine;
-import org.ros.internal.message.Message;
-import org.ros.message.MessageDeserializer;
-import org.ros.message.MessageSerializer;
+import org.ros.message.MessageFactory;
 import org.ros.node.NodeConfiguration;
+
 import ros_eval.RosEvaluationStrategy;
-import ros_eval.RosSerializationStrategy;
 import ros_eval.RosTopic;
 import rx_eval.RxjavaEvaluationStrategy;
-import sensor_msgs.Image;
-import std_msgs.Bool;
-import std_msgs.Char;
-import std_msgs.Int64;
+import std_msgs.Int32;
 import test_data.utilities.Threads;
-
-import java.nio.ByteOrder;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * @author Orestis Melkonian
@@ -34,7 +16,7 @@ public class Adhoc {
 
     @Test
     public void ros() {
-        Config config = new Config();
+        /*Config config = new Config();
         MemberAttributeConfig memberConfig = new MemberAttributeConfig();
         memberConfig.setIntAttribute("cores", 4);
         memberConfig.setBooleanAttribute("ros", true);
@@ -51,19 +33,37 @@ public class Adhoc {
                         RxjavaEvaluationStrategy::new,
                         () -> new RosEvaluationStrategy(new RxjavaEvaluationStrategy(), "localhost", "myros_client")
                 )
-        );
-        Stream.serializationStrategy = new RosSerializationStrategy();
+        );*/
 
-        RosTopic<Image> CAMERA = new RosTopic<>("/camera/rgb/image_color", Image._TYPE);
-        Stream.from(CAMERA).subscribe(im -> System.out.println("im"));
+        // Configuration
+        Stream.evaluationStrategy = new RosEvaluationStrategy(
+                new RxjavaEvaluationStrategy(),
+                "localhost",
+                "myrosclient"
+        );
+
+//        Stream.serializationStrategy = new RosSerializationStrategy();
+
+        MessageFactory msgFactory = NodeConfiguration.newPrivate().getTopicMessageFactory();
+
+        RosTopic<Int32> testTopic = new RosTopic<>("/test_topic", Int32._TYPE);
+
+        Stream.from(testTopic).subscribe(msg -> System.out.println(msg.getData()));
+
+        Stream.range(0, 100).map(i -> {
+            Int32 msg = msgFactory.newFromType(Int32._TYPE);
+            msg.setData(i);
+            return msg;
+        }).subscribe(testTopic);
+
 
         Threads.sleep();
     }
 
-    private static class MyMachine implements Machine {
+    /*private static class MyMachine implements Machine {
         @Override
         public int cores() {
             return 4;
         }
-    }
+    }*/
 }

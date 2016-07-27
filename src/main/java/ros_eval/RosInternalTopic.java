@@ -1,11 +1,12 @@
 package ros_eval;
 
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 import org.rhea_core.Stream;
 import org.rhea_core.annotations.PlacementConstraint;
 import org.rhea_core.internal.output.Output;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 import org.rhea_core.io.ExternalTopic;
+import org.rhea_core.io.InternalTopic;
 import org.ros.node.ConnectedNode;
 
 import java.util.ArrayList;
@@ -16,18 +17,17 @@ import java.util.List;
  * @author Orestis Melkonian
  */
 @PlacementConstraint(constraint = "ros")
-public class RosTopic<T> extends ExternalTopic<T, ConnectedNode> {
+public class RosInternalTopic<T> extends InternalTopic<T, ConnectedNode> {
 
     String type;
     org.ros.node.topic.Publisher<T> rosPublisher;
     org.ros.node.topic.Subscriber<T> rosSubscriber;
 
-    public RosTopic(String name, String type) {
-        super(name);
+    public RosInternalTopic(String name, String type) {
+        super(name, null); // TODO add serialization strategy
         this.type = type;
     }
 
-    @Override
     public void setClient(ConnectedNode client) {
         rosPublisher = client.newPublisher(name, type);
         rosSubscriber = client.newSubscriber(name, type);
@@ -54,7 +54,6 @@ public class RosTopic<T> extends ExternalTopic<T, ConnectedNode> {
 
     private void publish(T msg) {
         rosPublisher.publish(msg);
-
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
@@ -72,16 +71,16 @@ public class RosTopic<T> extends ExternalTopic<T, ConnectedNode> {
 
 
     @Override
-    public RosTopic clone() {
-        return new RosTopic(name, type);
+    public RosInternalTopic clone() {
+        return new RosInternalTopic(name, type);
     }
 
-    public static List<RosTopic> extract(Stream stream, Output output) {
-        List<RosTopic> topics = new ArrayList<>();
+    public static List<RosInternalTopic> extract(Stream stream, Output output) {
+        List<RosInternalTopic> topics = new ArrayList<>();
 
         for (ExternalTopic topic : ExternalTopic.extractAll(stream, output))
-            if (topic instanceof RosTopic)
-                topics.add((RosTopic) topic);
+            if (topic instanceof RosInternalTopic)
+                topics.add(((RosInternalTopic) topic));
 
         return topics;
     }
