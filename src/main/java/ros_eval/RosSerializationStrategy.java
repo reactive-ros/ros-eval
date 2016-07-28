@@ -5,6 +5,7 @@ import com.cedarsoftware.util.io.JsonWriter;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.rhea_core.internal.Notification;
+import org.rhea_core.internal.Notification.Kind;
 import org.rhea_core.serialization.SerializationStrategy;
 import org.ros.internal.message.Message;
 import org.ros.message.MessageDeserializer;
@@ -20,7 +21,7 @@ import java.nio.charset.Charset;
  * A (de)serializer for the messages transferred within the inner generated topics of {@link RosEvaluationStrategy}.
  * @author Orestis Melkonian
  */
-public class RosSerializationStrategy implements SerializationStrategy {
+public class RosSerializationStrategy implements SerializationStrategy<ChannelBuffer> {
     private static final String complete = "C";
     private static final String error = "E";
     private static final String next = "N";
@@ -28,8 +29,8 @@ public class RosSerializationStrategy implements SerializationStrategy {
     public static final MessageSerializationFactory serFactory = NodeConfiguration.newPrivate().getMessageSerializationFactory();
 
     @Override
-    public <T> byte[] serialize(Notification<T> notification) {
-        Notification.Kind kind = notification.getKind();
+    public <T> ChannelBuffer serialize(Notification<T> notification) {
+        Kind kind = notification.getKind();
         String prefix, content;
         switch(kind) {
             case OnCompleted:
@@ -54,12 +55,12 @@ public class RosSerializationStrategy implements SerializationStrategy {
                     content = JsonWriter.objectToJson(obj);
                 }
         }
-        return (prefix + "$" + content).getBytes();
+        return ChannelBuffers.copiedBuffer(ByteOrder.LITTLE_ENDIAN, (prefix + "$" + content).getBytes());
     }
 
     @Override
-    public Notification deserialize(byte[] bytes) {
-        String msg = new String(bytes, Charset.defaultCharset());
+    public Notification deserialize(ChannelBuffer buffer) {
+        String msg = buffer.toString(Charset.defaultCharset());
         int sep = msg.indexOf("$");
         String prefix = msg.substring(0, sep);
         String content = msg.substring(sep + 1);
@@ -72,9 +73,9 @@ public class RosSerializationStrategy implements SerializationStrategy {
             case next: // onNext
                 return Notification.createOnNext(JsonReader.jsonToJava(content));
             default: // onNext (ROS)
-                ChannelBuffer buffer = ChannelBuffers.copiedBuffer(ByteOrder.LITTLE_ENDIAN, content, Charset.defaultCharset());
+                ChannelBuffer buf = ChannelBuffers.copiedBuffer(ByteOrder.LITTLE_ENDIAN, content, Charset.defaultCharset());
                 MessageDeserializer deserializer = serFactory.newMessageDeserializer(prefix);
-                return Notification.createOnNext(deserializer.deserialize(buffer));
+                return Notification.createOnNext(deserializer.deserialize(buf));
         }
     }
 }

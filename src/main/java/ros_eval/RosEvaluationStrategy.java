@@ -43,10 +43,12 @@ public class RosEvaluationStrategy implements EvaluationStrategy {
     @Override
     public <T> void evaluate(Stream<T> stream, Output output) {
 
-        for (RosTopic topic : RosTopic.extract(stream, output)) {
-            System.out.println(topic);
+        for (RosTopic topic : RosTopic.extract(stream, output))
             topic.setClient(connectedNode[0]);
-        }
+
+        for (RosInternalTopic topic : RosInternalTopic.extract(stream, output))
+            topic.setClient(connectedNode[0]);
+
 
         // Propagate evaluation to first-order strategy
         innerStrategy.evaluate(stream, output);
